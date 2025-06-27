@@ -79,39 +79,6 @@ async function generatePDF() {
             yPosition += 5;
         });
 
-        function formatarNome(nomeCompleto) {
-    nomeCompleto = nomeCompleto.trim();
-
-    if (nomeCompleto.length <= 40) {
-        return nomeCompleto.toUpperCase();
-    }
-
-    const partes = nomeCompleto.split(/\s+/);
-
-    if (partes.length <= 2) {
-        return nomeCompleto.toUpperCase().slice(0, 40);
-    }
-
-    const primeiroNome = partes[0];
-    const ultimoNome = partes[partes.length - 1];
-    const nomesDoMeio = partes.slice(1, -1).map(p => p[0] + ".");
-
-    const nomeAbreviado = [primeiroNome, ...nomesDoMeio, ultimoNome].join(" ");
-    return nomeAbreviado.toUpperCase().slice(0, 40);
-}
-            nomeCompleto = nomeCompleto.trim();
-            if (nomeCompleto.length <= 40) {
-                return nomeCompleto.toUpperCase();
-            }
-            const partes = nomeCompleto.split(/\s+/);
-            let nomeFormatado = partes[0];
-            for (let i = 1; i < partes.length - 2; i++) {
-                nomeFormatado += ` ${partes[i].charAt(0)}.`;
-            }
-            nomeFormatado += ` ${partes[partes.length - 2]} ${partes[partes.length - 1]}`;
-            return nomeFormatado.slice(0, 40).toUpperCase();
-        }
-
         doc.setFont("courier new", "bold");
         doc.setFontSize(9);
         doc.text(`${formatarNome(nome)}`, 120, 86);
@@ -154,6 +121,39 @@ async function generatePDF() {
         loading.style.display = 'none';
         document.getElementById('generatePdfButton').disabled = false;
     }
+      function formatarNome(nomeCompleto) {
+    nomeCompleto = nomeCompleto.trim();
+
+    if (nomeCompleto.length <= 40) {
+        return nomeCompleto.toUpperCase();
+    }
+
+    const partes = nomeCompleto.split(/\s+/);
+
+    if (partes.length <= 2) {
+        return nomeCompleto.toUpperCase().slice(0, 40);
+    }
+
+    const primeiroNome = partes[0];
+    const ultimoNome = partes[partes.length - 1];
+    const nomesDoMeio = partes.slice(1, -1).map(p => p[0] + ".");
+
+    const nomeAbreviado = [primeiroNome, ...nomesDoMeio, ultimoNome].join(" ");
+    return nomeAbreviado.toUpperCase().slice(0, 40);
+}
+            nomeCompleto = nomeCompleto.trim();
+            if (nomeCompleto.length <= 40) {
+                return nomeCompleto.toUpperCase();
+            }
+            const partes = nomeCompleto.split(/\s+/);
+            let nomeFormatado = partes[0];
+            for (let i = 1; i < partes.length - 2; i++) {
+                nomeFormatado += ` ${partes[i].charAt(0)}.`;
+            }
+            nomeFormatado += ` ${partes[partes.length - 2]} ${partes[partes.length - 1]}`;
+            return nomeFormatado.slice(0, 40).toUpperCase();
+        }
+
 }
 
 function formatDate(dateString) {
