@@ -89,7 +89,7 @@ async function generatePDF() {
     const partes = nomeCompleto.split(/\s+/);
 
     if (partes.length <= 2) {
-        return nomeCompleto.toUpperCase().slice(0, 40); // Corta se mesmo assim for grande
+        return nomeCompleto.toUpperCase().slice(0, 40);
     }
 
     const primeiroNome = partes[0];
@@ -99,6 +99,19 @@ async function generatePDF() {
     const nomeAbreviado = [primeiroNome, ...nomesDoMeio, ultimoNome].join(" ");
     return nomeAbreviado.toUpperCase().slice(0, 40);
 }
+            nomeCompleto = nomeCompleto.trim();
+            if (nomeCompleto.length <= 40) {
+                return nomeCompleto.toUpperCase();
+            }
+            const partes = nomeCompleto.split(/\s+/);
+            let nomeFormatado = partes[0];
+            for (let i = 1; i < partes.length - 2; i++) {
+                nomeFormatado += ` ${partes[i].charAt(0)}.`;
+            }
+            nomeFormatado += ` ${partes[partes.length - 2]} ${partes[partes.length - 1]}`;
+            return nomeFormatado.slice(0, 40).toUpperCase();
+        }
+
         doc.setFont("courier new", "bold");
         doc.setFontSize(9);
         doc.text(`${formatarNome(nome)}`, 120, 86);
@@ -133,7 +146,7 @@ async function generatePDF() {
         doc.text(`Documento gerado em: ${new Date().toLocaleString()}`, 
                 pageWidth - 20, pageHeight - 10, { align: 'right' });
 
-        doc.save(`CNS_${nome.replace(/\s/g, '_')}.pdf`);
+        doc.save(`Beneficiario_${nome.replace(/\s/g, '_')}.pdf`);
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
         alert('Ocorreu um erro ao gerar o PDF.');
