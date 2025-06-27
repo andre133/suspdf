@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Beneficiário</title>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: #5595e98f;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .image-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        #loading {
+            display: none;
+            color: #4CAF50;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #barcode-preview {
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Dados do Paciente</h1>
+        <form id="beneficiaryForm">
+            <div class="form-group">
+                <label for="nome">Nome do Paciente:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="dataNascimento">Data de nascimento:</label>
+                <input type="date" id="dataNascimento" name="dataNascimento" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo" name="sexo" required>
+                    <option value="">Selecione</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="cns">Número do CNS:</label>
+                <input type="text" id="cns" name="cns" required pattern="[0-9]{15}" title="O CNS deve conter 15 dígitos">
+                <svg id="barcode-preview"></svg>
+            </div>
+            
+            <button type="button" id="generatePdfButton">Gerar PDF</button>
+            <div id="loading">Gerando PDF, por favor aguarde...</div>
+        </form>
+    </div>
+    
+    <div class="image-container">
+        <h2>Imagem de Referência</h2>
+        <img id="rustImage" src="cns.png" crossorigin="anonymous">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.jspdf !== 'undefined' && typeof JsBarcode !== 'undefined') {
+                document.getElementById('generatePdfButton').addEventListener('click', generatePDF);
+                
+                // Mostrar pré-visualização do código de barras
+                document.getElementById('cns').addEventListener('input', function() {
+                    const cns = this.value;
+                    if (cns.length === 15) {
+                        JsBarcode("#barcode-preview", cns, {
+                            format: "CODE128",
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10
+                        });
+                        document.getElementById('barcode-preview').style.display = 'block';
+                    } else {
+                        document.getElementById('barcode-preview').style.display = 'none';
+                    }
+                });
+            } else {
+                alert('Erro: Bibliotecas necessárias não foram carregadas. Recarregue a página.');
+            }
+        });
+
+        async function generatePDF() {
+            const form = document.getElementById('beneficiaryForm');
+            const loading = document.getElementById('loading');
+            
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            loading.style.display = 'block';
+            document.getElementById('generatePdfButton').disabled = true;
+            
+            try {
+                const nome = document.getElementById('nome').value;
+                const dataNascimento = document.getElementById('dataNascimento').value;
+                const sexo = document.getElementById('sexo').value;
+                const cns = document.getElementById('cns').value;
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Primeiro adicionamos a imagem como plano de fundo
+                const img = document.getElementById('rustImage');
+                const imgData = await getImageBase64(img);
+                
+                // Ajustamos a imagem para ocupar toda a página (A4)
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const imgWidth = img.naturalWidth;
+                const imgHeight = img.naturalHeight;
+                const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                
+                // Novo código (imagem reduzida para 175mm de largura e centralizada):
+const desiredWidth = 503; // Largura desejada em mm (ajuste conforme necessário)
+const desiredHeight = 187.5;
+
+// Converter mm para unidades do PDF (1mm ≈ 0.3528 unidades PDF)
+const pdfUnitsWidth = desiredWidth * 0.3528;
+const pdfUnitsHeight = desiredHeight * 0.3528;
+
+// Centralizar a imagem
+const xOffset = (15);
+const yOffset = (68);
+
+// Adicionar a imagem ao PDF com o novo tamanho
+doc.addImage(imgData, 'PNG', xOffset, yOffset, pdfUnitsWidth, pdfUnitsHeight);
+                                          
+                // Adicionamos os dados sobre a imagem
+                
+// Adicionar o texto centralizado
+doc.setFont("helvetica", "bold"); // Fonte em negrito
+doc.setFontSize(14); // Tamanho maior para o título
+doc.setTextColor(0, 0, 0); // Cor preta
+
+// Título centralizado
+doc.text("Cartão Nacional de Saúde - CNS", pageWidth / 2, 21, { align: "center" });
+
+// Nome do beneficiário (substitua pelo nome do formulário)
+doc.setFont("helvetica", "normal");
+doc.setFontSize(12);
+doc.text(`Sr. ${nome.toUpperCase()},`, 20, 33);  // x=20, y=35
+
+// Mensagem (alinhada à esquerda)
+doc.setFont("helvetica", "normal");
+doc.setFontSize(12);
+const mensagem = [
+    "Parabéns! Seus dados já constam no Sistema Único de Saúde - SUS.",
+    "Informe seu número de CNS quando usar a rede do Sistema Único de Saúde – SUS.",
+    "Recorte o Cartão abaixo e use-o normalmente. Ele vale em todo o território nacional."
+];
+
+// Adicionar cada linha (alinhada à esquerda)
+let yPosition = 38;  // Posição Y inicial
+mensagem.forEach(line => {
+    doc.text(line, 20, yPosition);  // x=20 (margem fixa à esquerda)
+    yPosition += 5;  // Espaçamento entre linhas
+});
+
+                // Nome Abreviado
+function formatarNome(nomeCompleto) {
+    nomeCompleto = nomeCompleto.trim();
+
+    // Se o nome completo tiver até 40 caracteres, retorna ele todo em maiúsculas
+    if (nomeCompleto.length <= 40) {
+        return nomeCompleto.toUpperCase();
+    }
+
+    // Divide o nome em partes
+    const partes = nomeCompleto.split(/\s+/);
+
+    // Pega o primeiro nome
+    let nomeFormatado = partes[0];
+
+    // Abrevia os nomes do meio (exceto os dois últimos)
+    for (let i = 1; i < partes.length - 2; i++) {
+        nomeFormatado += ` ${partes[i].charAt(0)}.`;
+    }
+
+    // Adiciona os dois últimos nomes completos
+    nomeFormatado += ` ${partes[partes.length - 2]} ${partes[partes.length - 1]}`;
+
+    // Limita a 40 caracteres
+    return nomeFormatado.slice(0, 40).toUpperCase();
+}
+                // Nome
+                doc.setFont("courier new", "bold");
+                doc.setFontSize(9);
+                doc.text(`${formatarNome(nome)}`, 120, 86);
+
+                // Data de Nascimento
+                doc.setFont("courier new", "bold");
+                doc.setFontSize(8);
+                doc.text(`Data Nasc.: ${formatDate(dataNascimento)}`, 120, 94);
+
+                // Sexo
+                doc.setFont("courier new", "bold");
+                doc.setFontSize(8);
+                doc.text(`Sexo: ${sexo}`,165, 94);
+
+                // Numero do SUS
+                // Formata o CNS com espaços (XXX XXXX XXXX XXXX)
+                const formatarCNS = (cns) => {
+    return cns.replace(/(\d{3})(\d{4})(\d{4})(\d{4})/, "$1  $2  $3  $4");
+};
+                doc.setFont("courier new", "bold");
+                doc.setFontSize(18);
+                doc.text(formatarCNS(cns), 120, 101);
+                
+                // Gerar código de barras
+                const barcodeCanvas = document.createElement('canvas');
+                JsBarcode(barcodeCanvas, cns, {
+                    format: "CODE128",
+                    displayValue: false, // Não mostrar o texto abaixo do código
+                    width: 2,
+                    height: 50,
+                    margin: 0
+                });
+                
+                // Adicionar código de barras ao PDF 
+                // POSIÇÃO E TAMANHO DO CODIGO DE BARRAS
+                const barcodeData = barcodeCanvas.toDataURL('image/png');
+                doc.addImage(barcodeData, 'PNG', 121, 103, 55, 8);
+                
+                // Data de geração em baixo
+                doc.setFontSize(10);
+                doc.setTextColor(200, 200, 200); // Cinza claro
+                doc.text(`Documento gerado em: ${new Date().toLocaleString()}`, 
+                        pageWidth - 20, pageHeight - 10, { align: 'right' });
+                
+                doc.save(`Beneficiario_${nome.replace(/\s/g, '_')}.pdf`);
+                
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                alert('Ocorreu um erro ao gerar o PDF.');
+            } finally {
+                loading.style.display = 'none';
+                document.getElementById('generatePdfButton').disabled = false;
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function getImageBase64(img) {
+            return new Promise((resolve, reject) => {
+                if (img.complete && img.naturalWidth !== 0) {
+                    resolve(getCanvasImageData(img));
+                    return;
+                }
+                
+                img.onload = () => {
+                    resolve(getCanvasImageData(img));
+                };
+                
+                img.onerror = () => {
+                    reject(new Error('Falha ao carregar a imagem'));
+                };
+            });
+        }
+        
+        function getCanvasImageData(img) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            return canvas.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>
