@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof window.jspdf !== 'undefined' && typeof JsBarcode !== 'undefined') {
         document.getElementById('generatePdfButton').addEventListener('click', generatePDF);
@@ -121,7 +120,9 @@ async function generatePDF() {
         loading.style.display = 'none';
         document.getElementById('generatePdfButton').disabled = false;
     }
-     // Agora sim vem a função formatarNome FORA do try
+}
+
+// Helper functions moved outside of generatePDF
 function formatarNome(nomeCompleto) {
     nomeCompleto = nomeCompleto.trim();
 
