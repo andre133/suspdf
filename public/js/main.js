@@ -112,7 +112,7 @@ async function generatePDF() {
         doc.text(`Documento gerado em: ${new Date().toLocaleString()}`, 
                 pageWidth - 20, pageHeight - 10, { align: 'right' });
 
-        doc.save(`Beneficiario_${nome.replace(/\s/g, '_')}.pdf`);
+        doc.save(`${nome.replace(/\s/g, '_')}.pdf`);
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
         alert('Ocorreu um erro ao gerar o PDF.');
