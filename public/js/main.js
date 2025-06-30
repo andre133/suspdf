@@ -105,7 +105,7 @@ async function generatePDF() {
         });
 
         const barcodeData = barcodeCanvas.toDataURL('image/png');
-        doc.addImage(barcodeData, 'PNG', 121, 103, 55, 8);
+        doc.addImage(barcodeData, 'PNG', 121, 103, 55, 6);
 
         doc.setFontSize(10);
         doc.setTextColor(200, 200, 200);
